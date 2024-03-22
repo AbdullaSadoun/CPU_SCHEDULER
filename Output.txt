@@ -1,4 +1,4 @@
-T1 0 8
+my mini testT1 0 8
 T2 1 4
 T3 2 9
 T4 3 5
@@ -11,5 +11,16 @@ Waiting Time T1: 0
 Waiting Time T2: 7
 Waiting Time T3: 10
 Waiting Time T4: 18
-Avarege Waiting Time: 8
+Avarege Waiting Time: 8.000000
 
+
+RR:
+T1 starts at 0, ends at 4
+T2 starts at 4, ends at 8
+T3 starts at 8, ends at 12
+T4 starts at 12, ends at 16
+T1 starts at 16, ends at 20
+T3 starts at 20, ends at 24
+T4 starts at 24, ends at 25
+T3 starts at 25, ends at 26
+Average Waiting Time: 11.75

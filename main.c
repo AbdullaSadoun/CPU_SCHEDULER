@@ -16,7 +16,7 @@ char delimiters[] = ",\n";
 FILE *fout;
 
 struct tasks {
-
+    
     /*from file*/
     char name[JOB_NAME_LEN];
     int arrival_time;
@@ -32,12 +32,13 @@ struct tasks {
 void first_come_first_serve(struct tasks *tasks_array, int no_of_records, FILE *fout){
     /* implemeting first come first serve algorithm to scheduel */
     fprintf(fout,"FCFS:\n");
-    int start=0, end =0, avg_waiting_time = 0;
+    int start=0, end =0, avg_waiting_summer = 0;
+    float avg_waiting_time = 0;
 
     for (int i = 0; i < no_of_records; i++) {
         end += tasks_array[i].burst_time;
         tasks_array[i].waiting_time = start - tasks_array[i].arrival_time;
-        avg_waiting_time += tasks_array[i].waiting_time;
+        avg_waiting_summer += tasks_array[i].waiting_time;
         fprintf(fout, "%s\t%d\t%d\t\n", tasks_array[i].name, start, end);  // Note: changed task_name to name as per struct definition
         start = end;
     }
@@ -46,10 +47,62 @@ void first_come_first_serve(struct tasks *tasks_array, int no_of_records, FILE *
         fprintf(fout, "Waiting Time %s: %d\n", tasks_array[i].name, tasks_array[i].waiting_time);
     }
     
-    fprintf(fout, "Avarege Waiting Time: %f\n\n", (avg_waiting_time/no_of_records));
+    avg_waiting_time = (float)avg_waiting_summer/no_of_records;
+
+    fprintf(fout, "Average Waiting Time: %f\n\n", avg_waiting_time);
 }
 
 void round_robin(struct tasks *tasks_array, int no_of_records, FILE *fout){
+    int time = 0; // Current time in the simulation
+    int completed = 0; // Number of tasks completed
+    int current_task = 0; // Index of the current task
+    int total_waiting_time = 0; // Total waiting time for calculation of average
+    int time_quantum = 4; // Time quantum for the round-robin algorithm
+    
+    fprintf(fout, "\nRR:\n");
+
+    // Initialize remaining times for each task
+    for (int i = 0; i < no_of_records; i++) {
+        tasks_array[i].remaining_time = tasks_array[i].burst_time;
+    }
+
+    // Continue looping until all tasks are completed
+    while (completed < no_of_records) {
+        // If the task has remaining time, then it needs to be processed
+        if (tasks_array[current_task].remaining_time > 0) {
+            // Task is starting or continuing
+            fprintf(fout, "%s starts at %d, ", tasks_array[current_task].name, time);
+            
+            // If the remaining time is more than the time quantum, process it for the duration of the quantum
+            // Otherwise, just complete the task
+            if (tasks_array[current_task].remaining_time > time_quantum) {
+                time += time_quantum;
+                tasks_array[current_task].remaining_time -= time_quantum;
+            } else {
+                time += tasks_array[current_task].remaining_time;
+                // Calculate waiting time: current time - arrival time - burst time
+                int waiting_time = time - tasks_array[current_task].arrival_time - tasks_array[current_task].burst_time;
+                total_waiting_time += waiting_time;
+                tasks_array[current_task].waiting_time = waiting_time;
+                
+                tasks_array[current_task].remaining_time = 0; // Mark task as completed
+                completed++; // Increment the number of completed tasks
+            }
+            
+            fprintf(fout, "ends at %d\n", time);
+        }
+        
+        // Move to the next task, cycling back to the start if necessary
+        current_task = (current_task + 1) % no_of_records;
+    }
+    
+    for (int i = 0; i < no_of_records; i++) {
+        fprintf(fout, "Waiting Time for %s: %d\n", tasks_array[i].name, tasks_array[i].waiting_time);
+    }
+
+    // Calculate and print the average waiting time
+    float average_waiting_time = (float)total_waiting_time / no_of_records;
+    fprintf(fout, "Average Waiting Time: %.2f\n", average_waiting_time);
 }
 
 void non_preemptive_priority(struct tasks *tasks_array, int no_of_records, FILE *fout){
@@ -61,6 +114,12 @@ void preemptive_priority(struct tasks *tasks_array, int no_of_records, FILE *fou
 int main(int argc, char *argv[]){
     //FILE *fout 
     fout = fopen("Output.txt", "w");
+
+    if (fout == NULL) {
+    printf("Cannot open output file\n");
+    return 1;
+}
+    fprintf(fout, "my mini test");
 
     /* check for command line arguments */
     if (argc < 2) {
@@ -87,7 +146,7 @@ int main(int argc, char *argv[]){
     rewind(fin); // reset file pointer to the beginning of the file
     /*allocating memory for the array of jobs*/
     
-
+    i=0;
 
    //struct tasks *tasks_array;
 
@@ -120,6 +179,7 @@ int main(int argc, char *argv[]){
     printf("total of %d records\n", no_of_records); // test
 
     first_come_first_serve(tasks_array, no_of_records, fout);
+    round_robin(tasks_array, no_of_records, fout);
 
     free(tasks_array);
     fclose(fin);
