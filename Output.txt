@@ -1,0 +1,15 @@
+T1 0 8
+T2 1 4
+T3 2 9
+T4 3 5
+FCFS:
+T1	0	8	
+T2	8	12	
+T3	12	21	
+T4	21	26	
+Waiting Time T1: 0
+Waiting Time T2: 7
+Waiting Time T3: 10
+Waiting Time T4: 18
+Avarege Waiting Time: 8
+
